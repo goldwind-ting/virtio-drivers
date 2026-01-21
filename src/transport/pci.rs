@@ -114,6 +114,7 @@ impl PciTransport {
         if vendor_id != VIRTIO_VENDOR_ID {
             return Err(VirtioPciError::InvalidVendorId(vendor_id));
         }
+        info!("[virtio-blk] device_id {}", device_id);
         let device_type =
             device_type(device_id).ok_or(VirtioPciError::InvalidDeviceId(device_id))?;
 

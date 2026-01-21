@@ -60,7 +60,7 @@ impl<H: Hal, T: Transport> VirtIOBlk<H, T> {
             Ok((read_config!(transport, BlkConfig, capacity_low)? as u64)
                 | ((read_config!(transport, BlkConfig, capacity_high)? as u64) << 32))
         })?;
-        info!("found a block device of size {}KB", capacity / 2);
+        info!("[virtio-blk] found a block device of size {}KB, RING_INDIRECT_DESC {}, RING_EVENT_IDX {}", capacity / 2, negotiated_features.contains(BlkFeature::RING_INDIRECT_DESC), negotiated_features.contains(BlkFeature::RING_EVENT_IDX));
 
         let queue = VirtQueue::new(
             &mut transport,
@@ -69,7 +69,9 @@ impl<H: Hal, T: Transport> VirtIOBlk<H, T> {
             negotiated_features.contains(BlkFeature::RING_EVENT_IDX),
         )?;
         transport.finish_init();
-
+        let status = transport.get_status();
+        let feat = transport.read_device_features();
+        info!("[virtio-blk] status {:?}, features {}", status, feat);
         Ok(VirtIOBlk {
             transport,
             queue,
