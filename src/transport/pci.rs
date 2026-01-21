@@ -16,6 +16,7 @@ use core::{
     ops::Deref,
     ptr::NonNull,
 };
+use log::info;
 use safe_mmio::{
     field, field_shared,
     fields::{ReadOnly, ReadPure, ReadPureWrite, WriteOnly},
@@ -143,7 +144,10 @@ impl PciTransport {
                     .configuration_access
                     .read_word(device_function, capability.offset + CAP_LENGTH_OFFSET),
             };
-
+            info!(
+                "[PciTransport::new] struct_info: {:?}, offset: {}, cap_len: {}, cfg_type: {}",
+                struct_info, capability.offset, cap_len, cfg_type
+            );
             match cfg_type {
                 VIRTIO_PCI_CAP_COMMON_CFG if common_cfg.is_none() => {
                     common_cfg = Some(struct_info);
@@ -208,6 +212,7 @@ impl PciTransport {
             None
         };
 
+        info!("[PciTransport::new] common_cfg {:#x}, notify_region {:#x}, notify_off_multiplier {:#x}, isr_status {:#x}, config_space {:#x}", common_cfg.ptr() as u64, notify_region.ptr() as *const u8 as u64, notify_off_multiplier, isr_status.ptr() as u64, config_space.as_ref().unwrap().ptr() as *const u8 as u64);
         Ok(Self {
             device_type,
             device_function,
